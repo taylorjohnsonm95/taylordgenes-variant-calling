@@ -5,6 +5,10 @@
 */
 include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
+include { FASTP                  } from '../modules/nf-core/fastp/main'
+include { BWAMEM2_MEM            } from '../modules/nf-core/bwamem2/mem/main'
+include { PICARD_COLLECTWGSMETRICS} from '../modules/nf-core/picard/collectwgsmetrics/main'
+include { PICARD_MARKDUPLICATES  } from '../modules/nf-core/picard/markduplicates/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -20,10 +24,14 @@ workflow VARIANT_CALLING {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+    ch_fasta
+    ch_fasta_fai
+    ch_bwamem2
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+
     //
     // MODULE: Run FastQC
     //
@@ -32,6 +40,53 @@ workflow VARIANT_CALLING {
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+    //
+    // MODULE: Run Fastp
+    //
+    FASTP (
+        ch_samplesheet,
+        params.discard_trimmed_pass,
+        params.save_trimmed_fail,
+        params.save_merged
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.html.collect{ it[1] })
+    ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.json.collect{ it[1] })
+    ch_versions = ch_versions.mix(FASTP.out.versions.first())
+
+    //
+    // MODULE: Run BWA-MEM2
+    //
+    BWAMEM2_MEM (
+        FASTP.out.reads,
+        ch_bwamem2,
+        ch_fasta,
+        params.sort_bam
+    )
+    ch_versions = ch_versions.mix(FASTP.out.versions.first())
+
+    //
+    // MODULE: Run Picard
+    //
+    PICARD_MARKDUPLICATES (
+        BWAMEM2_MEM.out.bam,
+        ch_fasta,
+        ch_fasta_fai
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(PICARD_MARKDUPLICATES.out.metrics.collect{ it[1] })
+
+    intervallist = params.intervallist ? Channel.fromPath(params.intervallist).collect() : Channel.empty()
+    ch_bam = BWAMEM2_MEM.out.bam            // tuple: (meta, bam)
+    ch_bai = BWAMEM2_MEM.out.bai            // tuple: (meta, bai)
+    ch_bam_bai = ch_bam.join(ch_bai, by: 0) // tuple: (meta, bam, bai)
+    PICARD_COLLECTWGSMETRICS (
+        ch_bam_bai,
+        ch_fasta,
+        ch_fasta_fai,
+        intervallist
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(PICARD_COLLECTWGSMETRICS.out.metrics.collect{ it[1] })
+    ch_versions = ch_versions.mix(FASTP.out.versions.first())
 
     //
     // Collate and save software versions

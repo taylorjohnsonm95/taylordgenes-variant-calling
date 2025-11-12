@@ -28,6 +28,8 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_vari
 //   This is an example of how to use getGenomeAttribute() to fetch parameters
 //   from igenomes.config using `--genome`
 params.fasta = getGenomeAttribute('fasta')
+params.fasta_fai = getGenomeAttribute('fasta_fai')
+params.bwamem2 = getGenomeAttribute('bwamem2')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,14 +44,21 @@ workflow TAYLORDGENES_VARIANT_CALLING {
 
     take:
     samplesheet // channel: samplesheet read in from --input
-
     main:
+
+    // Wrap iGenomes references into channels with meta maps
+    ch_fasta       = Channel.value([ [id: params.genome], file(params.fasta) ])
+    ch_fasta_fai   = Channel.value([ [id: params.genome], file(params.fasta_fai) ])
+    ch_bwamem2     = Channel.value([ [id: params.genome], file(params.bwamem2) ])
 
     //
     // WORKFLOW: Run pipeline
     //
     VARIANT_CALLING (
-        samplesheet
+        samplesheet,
+        ch_fasta,
+        ch_fasta_fai,
+        ch_bwamem2
     )
     emit:
     multiqc_report = VARIANT_CALLING.out.multiqc_report // channel: /path/to/multiqc_report.html
