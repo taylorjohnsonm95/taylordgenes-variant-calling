@@ -9,6 +9,16 @@ include { FASTP                  } from '../modules/nf-core/fastp/main'
 include { BWAMEM2_MEM            } from '../modules/nf-core/bwamem2/mem/main'
 include { PICARD_COLLECTWGSMETRICS} from '../modules/nf-core/picard/collectwgsmetrics/main'
 include { PICARD_MARKDUPLICATES  } from '../modules/nf-core/picard/markduplicates/main'
+include { MOSDEPTH               } from '../modules/nf-core/mosdepth/main'
+include { VERIFYBAMID_VERIFYBAMID2} from '../modules/nf-core/verifybamid/verifybamid2/main'
+include { SOMALIER_EXTRACT       } from '../modules/nf-core/somalier/extract/main'
+include { SOMALIER_ANCESTRY      } from '../modules/nf-core/somalier/ancestry/main'
+include { SOMALIER_RELATE        } from '../modules/nf-core/somalier/relate/main'
+include { SAMTOOLS_FLAGSTAT      } from '../modules/nf-core/samtools/flagstat/main'
+include { SAMTOOLS_IDXSTATS      } from '../modules/nf-core/samtools/idxstats/main'
+include { DEEPVARIANT_RUNDEEPVARIANT} from '../modules/nf-core/deepvariant/rundeepvariant/main'
+include { MANTA_GERMLINE         } from '../modules/nf-core/manta/germline/main'
+include { TIDDIT_SV              } from '../modules/nf-core/tiddit/sv/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -27,6 +37,10 @@ workflow VARIANT_CALLING {
     ch_fasta
     ch_fasta_fai
     ch_bwamem2
+    ch_intervallist
+    ch_svd
+    ch_somalier_sites
+    ch_labelled_somalier_files
     main:
 
     ch_versions = Channel.empty()
@@ -75,7 +89,6 @@ workflow VARIANT_CALLING {
     )
     ch_multiqc_files = ch_multiqc_files.mix(PICARD_MARKDUPLICATES.out.metrics.collect{ it[1] })
 
-    intervallist = params.intervallist ? Channel.fromPath(params.intervallist).collect() : Channel.empty()
     ch_bam = BWAMEM2_MEM.out.bam            // tuple: (meta, bam)
     ch_bai = BWAMEM2_MEM.out.bai            // tuple: (meta, bai)
     ch_bam_bai = ch_bam.join(ch_bai, by: 0) // tuple: (meta, bam, bai)
@@ -83,10 +96,118 @@ workflow VARIANT_CALLING {
         ch_bam_bai,
         ch_fasta,
         ch_fasta_fai,
-        intervallist
+        ch_intervallist
     )
     ch_multiqc_files = ch_multiqc_files.mix(PICARD_COLLECTWGSMETRICS.out.metrics.collect{ it[1] })
-    ch_versions = ch_versions.mix(FASTP.out.versions.first())
+    ch_versions = ch_versions.mix(PICARD_COLLECTWGSMETRICS.out.versions.first())
+
+    //
+    // MODULE: Run mosdepth
+    //
+    MOSDEPTH (
+        ch_bam_bai,
+        ch_fasta
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(MOSDEPTH.out.summary_txt.collect{ it[1] })
+    ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
+
+    //
+    // MODULE: Run verifybamid2
+    //
+    VERIFYBAMID_VERIFYBAMID2 (
+        ch_bam_bai,
+        ch_svd,
+        Channel.empty(),
+        ch_fasta
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID2.out.self_sm.collect{ it[1] })
+    ch_versions = ch_versions.mix(VERIFYBAMID_VERIFYBAMID2.out.versions.first())
+
+    //
+    // MODULE: Run somalier
+    //
+    SOMALIER_EXTRACT (
+        ch_bam_bai,
+        ch_fasta,
+        ch_fasta_fai,
+        ch_somalier_sites
+    )
+    ch_versions = ch_versions.mix(SOMALIER_EXTRACT.out.versions.first())
+    ch_query_somalier_files = SOMALIER_EXTRACT.out.extract.collect()
+
+    SOMALIER_ANCESTRY (
+        ch_query_somalier_files,
+        ch_labelled_somalier_files
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(SOMALIER_ANCESTRY.out.html.collect{ it[1] })
+    ch_versions = ch_versions.mix(SOMALIER_ANCESTRY.out.versions.first())
+
+    SOMALIER_RELATE (
+        ch_query_somalier_files
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(SOMALIER_RELATE.out.html.collect{ it[1] })
+    ch_versions = ch_versions.mix(SOMALIER_RELATE.out.versions.first())
+
+    //
+    // MODULE: Run samtools
+    //
+    SAMTOOLS_IDXSTATS (
+        ch_bam_bai
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_IDXSTATS.out.idxstats.collect{ it[1] })
+    ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions.first())
+
+    SAMTOOLS_FLAGSTAT (
+        ch_bam_bai
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_FLAGSTAT.out.flagstat.collect{ it[1] })
+    ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions.first())
+
+    //
+    // MODULE: Run deepvariant
+    //
+    DEEPVARIANT_RUNDEEPVARIANT (
+        ch_bam_bai.map { meta, bam, bai -> [ meta, bam, bai, null ] },
+        ch_fasta,
+        ch_fasta_fai,
+        Channel.value(null),  // no gzi
+        Channel.value(null)   // no par_bed
+    )
+    ch_versions = ch_versions.mix(DEEPVARIANT_RUNDEEPVARIANT.out.versions.first())
+    
+    //
+    // MODULE: Run manta
+    //
+    MANTA_GERMLINE(
+        ch_bam_bai.map { meta, bam, bai -> [ meta, bam, bai, null, null ] },
+        ch_fasta,
+        ch_fasta_fai,
+        Channel.value(null)   // no config
+    )
+    ch_versions = ch_versions.mix(MANTA_GERMLINE.out.versions.first())
+
+    //
+    // MODULE: Run tiddit
+    //
+    TIDDIT_SV (
+        ch_bam_bai,
+        ch_fasta,
+        ch_bwamem2
+    )
+    ch_versions = ch_versions.mix(TIDDIT_RUNTIDDIT.out.versions.first())
+
+    //
+    // MODULE: Run VEP
+    //
+    ENSEMBLVEP_VEP(
+        ch_vcfs,                // (meta, vcf, custom_extra_files)
+        params.genome,          // genome/assembly string
+        params.species,         // species
+        params.cache_version,   // e.g., 115
+        ch_cache,               // path cache
+        ch_fasta,               // (meta2, fasta)
+        ch_extra                // extra_files (plugins/custom VCFs)
+    )
 
     //
     // Collate and save software versions

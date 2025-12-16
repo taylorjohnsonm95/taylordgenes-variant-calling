@@ -51,6 +51,35 @@ workflow TAYLORDGENES_VARIANT_CALLING {
     ch_fasta_fai   = Channel.value([ [id: params.genome], file(params.fasta_fai) ])
     ch_bwamem2     = Channel.value([ [id: params.genome], file(params.bwamem2) ])
 
+    // picard
+    ch_intervallist = params.intervallist ? Channel.fromPath(params.intervallist).collect() : Channel.empty()
+
+    // verifybamid2 files
+    ch_svd = Channel.value([
+        file(params.verifybamid_ud,  checkIfExists: true),
+        file(params.verifybamid_mu,  checkIfExists: true),
+        file(params.verifybamid_bed, checkIfExists: true)
+    ])
+
+    // somalier files
+    ch_somalier_sites = Channel.value([ [id: 'sites'], file(params.somalier_sites, checkIfExists: true) ])
+    ch_somalier_labels = Channel.value( file(params.somalier_labels, checkIfExists: true) )
+    ch_somalier_ref_files = Channel.fromPath("${params.somalier_ref_dir}/*.somalier", checkIfExists: true).collect()
+    // tuple the labels + list of somalier ref files with meta
+    ch_labelled_somalier_files = ch_somalier_labels.combine(ch_somalier_ref_files)
+        .map { labels, ref_files -> [ [id:'somalier_ref'], labels, ref_files ] }
+
+    // VEP
+    ch_cache  = Channel.value( file(params.vep_cache) )
+    ch_extra  = Channel.value( file(params.vep_extra_dir) ) // plugins/customs folder
+
+    // VCFs (bgzipped + tabixed earlier)
+    ch_vcfs = input_vcf_paths
+    .map { v -> [[id: v.baseName], file(v)] }
+    // if you want to pass a per-sample extras dir, otherwise use Channel.value(null)
+    .map { meta_vcf -> tuple(meta_vcf[0], meta_vcf[1], file(params.vep_custom_bundle)) }
+
+
     //
     // WORKFLOW: Run pipeline
     //
@@ -58,7 +87,11 @@ workflow TAYLORDGENES_VARIANT_CALLING {
         samplesheet,
         ch_fasta,
         ch_fasta_fai,
-        ch_bwamem2
+        ch_bwamem2,
+        ch_intervallist,
+        ch_svd,
+        ch_somalier_sites,
+        ch_labelled_somalier_files
     )
     emit:
     multiqc_report = VARIANT_CALLING.out.multiqc_report // channel: /path/to/multiqc_report.html
