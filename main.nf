@@ -62,22 +62,20 @@ workflow TAYLORDGENES_VARIANT_CALLING {
     ])
 
     // somalier files
-    ch_somalier_sites = Channel.value([ [id: 'sites'], file(params.somalier_sites, checkIfExists: true) ])
-    ch_somalier_labels = Channel.value( file(params.somalier_labels, checkIfExists: true) )
+    ch_somalier_sites     = Channel.value([ [id: 'sites'], file(params.somalier_sites, checkIfExists: true) ])
     ch_somalier_ref_files = Channel.fromPath("${params.somalier_ref_dir}/*.somalier", checkIfExists: true).collect()
-    // tuple the labels + list of somalier ref files with meta
-    ch_labelled_somalier_files = ch_somalier_labels.combine(ch_somalier_ref_files)
-        .map { labels, ref_files -> [ [id:'somalier_ref'], labels, ref_files ] }
+    ch_labelled_somalier_files = ch_somalier_ref_files
+        .map { ref_files -> [ [id:'somalier_ref'], file(params.somalier_labels, checkIfExists: true), ref_files ] }
 
-    // VEP
-    ch_cache  = Channel.value( file(params.vep_cache) )
-    ch_extra  = Channel.value( file(params.vep_extra_dir) ) // plugins/customs folder
+        // VEP
+    // ch_cache  = Channel.value( file(params.vep_cache) )
+    // ch_extra  = Channel.value( file(params.vep_extra_dir) ) // plugins/customs folder
 
-    // VCFs (bgzipped + tabixed earlier)
-    ch_vcfs = input_vcf_paths
-    .map { v -> [[id: v.baseName], file(v)] }
-    // if you want to pass a per-sample extras dir, otherwise use Channel.value(null)
-    .map { meta_vcf -> tuple(meta_vcf[0], meta_vcf[1], file(params.vep_custom_bundle)) }
+    // // VCFs (bgzipped + tabixed earlier)
+    // ch_vcfs = input_vcf_paths
+    // .map { v -> [[id: v.baseName], file(v)] }
+    // // if you want to pass a per-sample extras dir, otherwise use Channel.value(null)
+    // .map { meta_vcf -> tuple(meta_vcf[0], meta_vcf[1], file(params.vep_custom_bundle)) }
 
 
     //
