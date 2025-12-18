@@ -37,11 +37,14 @@ process BWAMEM2_MEM {
     def reference = fasta && extension=="cram"  ? "--reference ${fasta}" : ""
     if (!fasta && extension=="cram") error "Fasta reference is required for CRAM output"
 
+    def rg = "@RG\\tID:${meta.id}\\tSM:${meta.id}\\tPL:ILLUMINA"
+
     """
     INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
 
     bwa-mem2 \\
         mem \\
+        -R "${rg}" \\
         $args \\
         -t $task.cpus \\
         \$INDEX \\
