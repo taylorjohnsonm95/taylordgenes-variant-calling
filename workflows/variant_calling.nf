@@ -89,27 +89,28 @@ workflow VARIANT_CALLING {
     )
     ch_multiqc_files = ch_multiqc_files.mix(PICARD_MARKDUPLICATES.out.metrics.collect{ it[1] })
 
-    // ch_bam = BWAMEM2_MEM.out.bam            // tuple: (meta, bam)
-    // ch_bai = BWAMEM2_MEM.out.bai            // tuple: (meta, bai)
-    // ch_bam_bai = ch_bam.join(ch_bai, by: 0) // tuple: (meta, bam, bai)
-    // PICARD_COLLECTWGSMETRICS (
-    //     ch_bam_bai,
-    //     ch_fasta,
-    //     ch_fasta_fai,
-    //     ch_intervallist
-    // )
-    // ch_multiqc_files = ch_multiqc_files.mix(PICARD_COLLECTWGSMETRICS.out.metrics.collect{ it[1] })
-    // ch_versions = ch_versions.mix(PICARD_COLLECTWGSMETRICS.out.versions.first())
+    ch_bam = PICARD_MARKDUPLICATES.out.bam
+    ch_bai = PICARD_MARKDUPLICATES.out.bai
+    ch_bam_bai = ch_bam.join(ch_bai, by: 0)
+
+    //ch_bam_bai.view { "BAM_BAI: $it" }
+    PICARD_COLLECTWGSMETRICS (
+        ch_bam_bai,
+        ch_fasta,
+        ch_fasta_fai
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(PICARD_COLLECTWGSMETRICS.out.metrics.collect{ it[1] })
+    ch_versions = ch_versions.mix(PICARD_COLLECTWGSMETRICS.out.versions.first())
 
     // //
     // // MODULE: Run mosdepth
     // //
-    // MOSDEPTH (
-    //     ch_bam_bai,
-    //     ch_fasta
-    // )
-    // ch_multiqc_files = ch_multiqc_files.mix(MOSDEPTH.out.summary_txt.collect{ it[1] })
-    // ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
+    MOSDEPTH (
+        ch_bam_bai,
+        ch_fasta
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(MOSDEPTH.out.summary_txt.collect{ it[1] })
+    ch_versions = ch_versions.mix(MOSDEPTH.out.versions.first())
 
     // //
     // // MODULE: Run verifybamid2

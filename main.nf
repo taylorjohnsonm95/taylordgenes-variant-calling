@@ -52,7 +52,9 @@ workflow TAYLORDGENES_VARIANT_CALLING {
     ch_bwamem2     = Channel.value([ [id: params.genome], file(params.bwamem2) ])
 
     // picard
-    ch_intervallist = params.intervallist ? Channel.fromPath(params.intervallist).collect() : Channel.empty()
+    ch_intervallist = params.intervallist ?
+        Channel.fromPath(params.intervallist, checkIfExists: true) :
+        Channel.empty()
 
     // verifybamid2 files
     ch_svd = Channel.value([
