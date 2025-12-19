@@ -88,7 +88,6 @@ workflow TAYLORDGENES_VARIANT_CALLING {
         ch_fasta,
         ch_fasta_fai,
         ch_bwamem2,
-        ch_intervallist,
         ch_mosdepth_bed,
         ch_svd,
         ch_somalier_sites,

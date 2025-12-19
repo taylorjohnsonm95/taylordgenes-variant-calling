@@ -37,7 +37,6 @@ workflow VARIANT_CALLING {
     ch_fasta
     ch_fasta_fai
     ch_bwamem2
-    ch_intervallist
     ch_mosdepth_bed
     ch_svd
     ch_somalier_sites
@@ -117,14 +116,13 @@ workflow VARIANT_CALLING {
     // //
     // // MODULE: Run verifybamid2
     // //
-    // VERIFYBAMID_VERIFYBAMID2 (
-    //     ch_bam_bai,
-    //     ch_svd,
-    //     Channel.empty(),
-    //     ch_fasta
-    // )
-    // ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID2.out.self_sm.collect{ it[1] })
-    // ch_versions = ch_versions.mix(VERIFYBAMID_VERIFYBAMID2.out.versions.first())
+    VERIFYBAMID_VERIFYBAMID2 (
+        ch_bam_bai,
+        ch_svd,
+        ch_fasta.map{ meta, fa -> fa }
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID2.out.self_sm.collect{ it[1] })
+    ch_versions = ch_versions.mix(VERIFYBAMID_VERIFYBAMID2.out.versions.first())
 
     // //
     // // MODULE: Run somalier
