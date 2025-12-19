@@ -51,11 +51,6 @@ workflow TAYLORDGENES_VARIANT_CALLING {
     ch_fasta_fai   = Channel.value([ [id: params.genome], file(params.fasta_fai) ])
     ch_bwamem2     = Channel.value([ [id: params.genome], file(params.bwamem2) ])
 
-    // picard
-    ch_intervallist = params.intervallist ?
-        Channel.fromPath(params.intervallist, checkIfExists: true) :
-        Channel.empty()
-
     // mosdepth
     ch_mosdepth_bed = params.mosdepth_bed ? Channel.fromPath(params.mosdepth_bed, checkIfExists: true)
         .map { bed -> [[id: bed.baseName], bed] }
