@@ -38,6 +38,7 @@ workflow VARIANT_CALLING {
     ch_fasta_fai
     ch_bwamem2
     ch_intervallist
+    ch_mosdepth_bed
     ch_svd
     ch_somalier_sites
     ch_labelled_somalier_files
@@ -105,8 +106,9 @@ workflow VARIANT_CALLING {
     // //
     // // MODULE: Run mosdepth
     // //
+    ch_bam_bai_bed = ch_bam_bai.combine(ch_mosdepth_bed.map { meta, bed -> [bed ?: []] })
     MOSDEPTH (
-        ch_bam_bai,
+        ch_bam_bai_bed,
         ch_fasta
     )
     ch_multiqc_files = ch_multiqc_files.mix(MOSDEPTH.out.summary_txt.collect{ it[1] })

@@ -56,6 +56,11 @@ workflow TAYLORDGENES_VARIANT_CALLING {
         Channel.fromPath(params.intervallist, checkIfExists: true) :
         Channel.empty()
 
+    // mosdepth
+    ch_mosdepth_bed = params.mosdepth_bed ? Channel.fromPath(params.mosdepth_bed, checkIfExists: true)
+        .map { bed -> [[id: bed.baseName], bed] }
+        : Channel.value([[id:'null'], []])
+
     // verifybamid2 files
     ch_svd = Channel.value([
         file(params.verifybamid_ud,  checkIfExists: true),
@@ -89,6 +94,7 @@ workflow TAYLORDGENES_VARIANT_CALLING {
         ch_fasta_fai,
         ch_bwamem2,
         ch_intervallist,
+        ch_mosdepth_bed,
         ch_svd,
         ch_somalier_sites,
         ch_labelled_somalier_files
