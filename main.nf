@@ -69,6 +69,9 @@ workflow TAYLORDGENES_VARIANT_CALLING {
     ch_labelled_somalier_files = ch_somalier_ref_files
         .map { ref_files -> [ [id:'somalier_ref'], file(params.somalier_labels, checkIfExists: true), ref_files ] }
 
+    ch_somalier_ped = params.somalier_ped ? Channel.fromPath(params.somalier_ped, checkIfExists: true)
+        .map { ped -> [[id: ped.baseName], ped] }
+        : Channel.value([[id:'null'], []])
         // VEP
     // ch_cache  = Channel.value( file(params.vep_cache) )
     // ch_extra  = Channel.value( file(params.vep_extra_dir) ) // plugins/customs folder
@@ -91,7 +94,8 @@ workflow TAYLORDGENES_VARIANT_CALLING {
         ch_mosdepth_bed,
         ch_svd,
         ch_somalier_sites,
-        ch_labelled_somalier_files
+        ch_labelled_somalier_files,
+        ch_somalier_ped
     )
     emit:
     multiqc_report = VARIANT_CALLING.out.multiqc_report // channel: /path/to/multiqc_report.html

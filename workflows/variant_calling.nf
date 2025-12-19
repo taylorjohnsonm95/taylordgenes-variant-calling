@@ -41,6 +41,7 @@ workflow VARIANT_CALLING {
     ch_svd
     ch_somalier_sites
     ch_labelled_somalier_files
+    ch_somalier_ped
     main:
 
     ch_versions = Channel.empty()
@@ -127,54 +128,58 @@ workflow VARIANT_CALLING {
     // //
     // // MODULE: Run somalier
     // //
-    // SOMALIER_EXTRACT (
-    //     ch_bam_bai,
-    //     ch_fasta,
-    //     ch_fasta_fai,
-    //     ch_somalier_sites
-    // )
-    // ch_versions = ch_versions.mix(SOMALIER_EXTRACT.out.versions.first())
-    // ch_query_somalier_files = SOMALIER_EXTRACT.out.extract.collect()
+    SOMALIER_EXTRACT (
+        ch_bam_bai,
+        ch_fasta,
+        ch_fasta_fai,
+        ch_somalier_sites
+    )
+    ch_versions = ch_versions.mix(SOMALIER_EXTRACT.out.versions.first())
+    ch_query_somalier_files = SOMALIER_EXTRACT.out.extract
+        .map { meta, som -> som }
+        .collect()
+        .map { list -> [ [id:'ancestry'], list ] }
 
-    // SOMALIER_ANCESTRY (
-    //     ch_query_somalier_files,
-    //     ch_labelled_somalier_files
-    // )
-    // ch_multiqc_files = ch_multiqc_files.mix(SOMALIER_ANCESTRY.out.html.collect{ it[1] })
-    // ch_versions = ch_versions.mix(SOMALIER_ANCESTRY.out.versions.first())
+    SOMALIER_ANCESTRY (
+        ch_query_somalier_files,
+        ch_labelled_somalier_files
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(SOMALIER_ANCESTRY.out.html.collect{ it[1] })
+    ch_versions = ch_versions.mix(SOMALIER_ANCESTRY.out.versions)
 
-    // SOMALIER_RELATE (
-    //     ch_query_somalier_files
-    // )
-    // ch_multiqc_files = ch_multiqc_files.mix(SOMALIER_RELATE.out.html.collect{ it[1] })
-    // ch_versions = ch_versions.mix(SOMALIER_RELATE.out.versions.first())
+    ch_query_somalier_files_ped = ch_query_somalier_files.combine(ch_somalier_ped.map { meta, ped -> [ped ?: []] })
+    SOMALIER_RELATE (
+        ch_query_somalier_files_ped
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(SOMALIER_RELATE.out.html.collect{ it[1] })
+    ch_versions = ch_versions.mix(SOMALIER_RELATE.out.versions.first())
 
     // //
     // // MODULE: Run samtools
     // //
-    // SAMTOOLS_IDXSTATS (
-    //     ch_bam_bai
-    // )
-    // ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_IDXSTATS.out.idxstats.collect{ it[1] })
-    // ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions.first())
+    SAMTOOLS_IDXSTATS (
+        ch_bam_bai
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_IDXSTATS.out.idxstats.collect{ it[1] })
+    ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions.first())
 
-    // SAMTOOLS_FLAGSTAT (
-    //     ch_bam_bai
-    // )
-    // ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_FLAGSTAT.out.flagstat.collect{ it[1] })
-    // ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions.first())
+    SAMTOOLS_FLAGSTAT (
+        ch_bam_bai
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_FLAGSTAT.out.flagstat.collect{ it[1] })
+    ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions.first())
 
     // //
     // // MODULE: Run deepvariant
     // //
-    // DEEPVARIANT_RUNDEEPVARIANT (
-    //     ch_bam_bai.map { meta, bam, bai -> [ meta, bam, bai, null ] },
-    //     ch_fasta,
-    //     ch_fasta_fai,
-    //     Channel.value(null),  // no gzi
-    //     Channel.value(null)   // no par_bed
-    // )
-    // ch_versions = ch_versions.mix(DEEPVARIANT_RUNDEEPVARIANT.out.versions.first())
+    DEEPVARIANT_RUNDEEPVARIANT (
+        ch_bam_bai.map { meta, bam, bai -> [ meta, bam, bai, null ] },
+        ch_fasta,
+        ch_fasta_fai,
+        Channel.value(null),  // no gzi
+        Channel.value(null)   // no par_bed
+    )
+    ch_versions = ch_versions.mix(DEEPVARIANT_RUNDEEPVARIANT.out.versions.first())
     
     // //
     // // MODULE: Run manta
