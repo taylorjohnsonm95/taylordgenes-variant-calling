@@ -1,3 +1,0 @@
-task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
-2	f5/16dfbf	35383	TAYLORDGENES_VARIANT_CALLING:VARIANT_CALLING:FASTP (test)	FAILED	126	2025-12-15 20:18:57.624	51ms	2ms	-	-	-	-	-
-1	48/0660cb	35360	TAYLORDGENES_VARIANT_CALLING:VARIANT_CALLING:FASTQC (test)	FAILED	126	2025-12-15 20:18:57.608	61ms	20ms	-	-	-	-	-
