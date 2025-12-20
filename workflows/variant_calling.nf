@@ -173,47 +173,47 @@ workflow VARIANT_CALLING {
     // // MODULE: Run deepvariant
     // //
     DEEPVARIANT_RUNDEEPVARIANT (
-        ch_bam_bai.map { meta, bam, bai -> [ meta, bam, bai, null ] },
+        ch_bam_bai.map { meta, bam, bai -> [ meta, bam, bai, [] ] },
         ch_fasta,
         ch_fasta_fai,
-        Channel.value(null),  // no gzi
-        Channel.value(null)   // no par_bed
+        [ [ id:'null' ], [] ],
+        [ [ id:'null' ], [] ]
     )
     ch_versions = ch_versions.mix(DEEPVARIANT_RUNDEEPVARIANT.out.versions.first())
     
     // //
     // // MODULE: Run manta
     // //
-    // MANTA_GERMLINE(
-    //     ch_bam_bai.map { meta, bam, bai -> [ meta, bam, bai, null, null ] },
-    //     ch_fasta,
-    //     ch_fasta_fai,
-    //     Channel.value(null)   // no config
-    // )
-    // ch_versions = ch_versions.mix(MANTA_GERMLINE.out.versions.first())
+    MANTA_GERMLINE(
+        ch_bam_bai.map { meta, bam, bai -> [ meta, bam, bai, [], [] ] },
+        ch_fasta,
+        ch_fasta_fai,
+        []
+    )
+    ch_versions = ch_versions.mix(MANTA_GERMLINE.out.versions.first())
 
     // //
     // // MODULE: Run tiddit
     // //
-    // TIDDIT_SV (
-    //     ch_bam_bai,
-    //     ch_fasta,
-    //     ch_bwamem2
-    // )
-    // ch_versions = ch_versions.mix(TIDDIT_RUNTIDDIT.out.versions.first())
+    TIDDIT_SV (
+        ch_bam_bai,
+        ch_fasta,
+        ch_bwamem2
+    )
+    ch_versions = ch_versions.mix(TIDDIT_SV.out.versions.first())
 
     // //
     // // MODULE: Run VEP
     // //
-    // ENSEMBLVEP_VEP(
-    //     ch_vcfs,                // (meta, vcf, custom_extra_files)
-    //     params.genome,          // genome/assembly string
-    //     params.species,         // species
-    //     params.cache_version,   // e.g., 115
-    //     ch_cache,               // path cache
-    //     ch_fasta,               // (meta2, fasta)
-    //     ch_extra                // extra_files (plugins/custom VCFs)
-    // )
+    ENSEMBLVEP_VEP(
+        ch_vcfs,                // (meta, vcf, custom_extra_files)
+        params.genome,          // genome/assembly string
+        params.species,         // species
+        params.cache_version,   // e.g., 115
+        ch_cache,               // path cache
+        ch_fasta,               // (meta2, fasta)
+        ch_extra                // extra_files (plugins/custom VCFs)
+    )
 
     //
     // Collate and save software versions
