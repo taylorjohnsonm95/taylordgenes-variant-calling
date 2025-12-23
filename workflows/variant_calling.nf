@@ -19,6 +19,7 @@ include { SAMTOOLS_IDXSTATS      } from '../modules/nf-core/samtools/idxstats/ma
 include { DEEPVARIANT_RUNDEEPVARIANT} from '../modules/nf-core/deepvariant/rundeepvariant/main'
 include { MANTA_GERMLINE         } from '../modules/nf-core/manta/germline/main'
 include { TIDDIT_SV              } from '../modules/nf-core/tiddit/sv/main'
+include { ENSEMBLVEP_VEP         } from '../modules/nf-core/ensemblvep/vep/main.nf'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -42,6 +43,7 @@ workflow VARIANT_CALLING {
     ch_somalier_sites
     ch_labelled_somalier_files
     ch_somalier_ped
+    ch_cache
     main:
 
     ch_versions = Channel.empty()
@@ -205,15 +207,17 @@ workflow VARIANT_CALLING {
     // //
     // // MODULE: Run VEP
     // //
+    ch_vcfs = DEEPVARIANT_RUNDEEPVARIANT.out.vcf
     ENSEMBLVEP_VEP(
-        ch_vcfs,                // (meta, vcf, custom_extra_files)
+        ch_vcfs.map { meta, vcf -> [ meta, vcf, [] ] },
         params.genome,          // genome/assembly string
         params.species,         // species
         params.cache_version,   // e.g., 115
         ch_cache,               // path cache
         ch_fasta,               // (meta2, fasta)
-        ch_extra                // extra_files (plugins/custom VCFs)
+        []                // extra_files (plugins/custom VCFs)
     )
+    ch_versions = ch_versions.mix(ENSEMBLVEP_VEP.out.versions.first())
 
     //
     // Collate and save software versions

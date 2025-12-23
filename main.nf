@@ -72,16 +72,9 @@ workflow TAYLORDGENES_VARIANT_CALLING {
     ch_somalier_ped = params.somalier_ped ? Channel.fromPath(params.somalier_ped, checkIfExists: true)
         .map { ped -> [[id: ped.baseName], ped] }
         : Channel.value([[id:'null'], []])
-        // VEP
-    // ch_cache  = Channel.value( file(params.vep_cache) )
-    // ch_extra  = Channel.value( file(params.vep_extra_dir) ) // plugins/customs folder
-
-    // // VCFs (bgzipped + tabixed earlier)
-    // ch_vcfs = input_vcf_paths
-    // .map { v -> [[id: v.baseName], file(v)] }
-    // // if you want to pass a per-sample extras dir, otherwise use Channel.value(null)
-    // .map { meta_vcf -> tuple(meta_vcf[0], meta_vcf[1], file(params.vep_custom_bundle)) }
-
+    
+    // VEP
+    ch_cache  = Channel.value( file(params.vep_cache, checkIfExists: true) )
 
     //
     // WORKFLOW: Run pipeline
@@ -95,7 +88,8 @@ workflow TAYLORDGENES_VARIANT_CALLING {
         ch_svd,
         ch_somalier_sites,
         ch_labelled_somalier_files,
-        ch_somalier_ped
+        ch_somalier_ped,
+        ch_cache
     )
     emit:
     multiqc_report = VARIANT_CALLING.out.multiqc_report // channel: /path/to/multiqc_report.html
