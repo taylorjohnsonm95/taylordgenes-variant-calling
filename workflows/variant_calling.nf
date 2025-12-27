@@ -19,7 +19,8 @@ include { SAMTOOLS_IDXSTATS      } from '../modules/nf-core/samtools/idxstats/ma
 include { DEEPVARIANT_RUNDEEPVARIANT} from '../modules/nf-core/deepvariant/rundeepvariant/main'
 include { MANTA_GERMLINE         } from '../modules/nf-core/manta/germline/main'
 include { TIDDIT_SV              } from '../modules/nf-core/tiddit/sv/main'
-include { ENSEMBLVEP_VEP         } from '../modules/nf-core/ensemblvep/vep/main.nf'
+include { ENSEMBLVEP_VEP         } from '../modules/nf-core/ensemblvep/vep/main'
+include { RUN_BENCHMARKING       } from '../subworkflows/local/run_benchmarking'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -210,11 +211,11 @@ workflow VARIANT_CALLING {
     ch_vcfs = DEEPVARIANT_RUNDEEPVARIANT.out.vcf
     ENSEMBLVEP_VEP(
         ch_vcfs.map { meta, vcf -> [ meta, vcf, [] ] },
-        params.genome,          // genome/assembly string
-        params.species,         // species
-        params.cache_version,   // e.g., 115
-        ch_cache,               // path cache
-        ch_fasta,               // (meta2, fasta)
+        params.genome,
+        params.species,
+        params.cache_version,
+        ch_cache,
+        ch_fasta,
         []                // extra_files (plugins/custom VCFs)
     )
     ch_versions = ch_versions.mix(ENSEMBLVEP_VEP.out.versions.first())
@@ -270,6 +271,14 @@ workflow VARIANT_CALLING {
         [],
         []
     )
+
+    if (params.benchmarking) {
+        RUN_BENCHMARKING(
+            DEEPVARIANT_RUNDEEPVARIANT.out.vcf,
+            ch_fasta,
+            ch_fasta_fai
+        )
+    }
 
     emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
