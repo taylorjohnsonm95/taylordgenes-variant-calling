@@ -1,4 +1,4 @@
-# taylordgenes/variant_calling
+# taylordgenes-variant-calling
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new/taylordgenes/variant_calling)
 [![GitHub Actions CI Status](https://github.com/taylordgenes/variant_calling/actions/workflows/nf-test.yml/badge.svg)](https://github.com/taylordgenes/variant_calling/actions/workflows/nf-test.yml)
@@ -14,25 +14,32 @@
 
 ## Introduction
 
-**taylordgenes/variant_calling** is a bioinformatics pipeline that ...
+**taylordgenes-variant-calling** is a Nextflow DSL2 pipeline for germline variant calling from Illumina whole-genome sequencing (WGS) data.
+It takes paired-end FASTQ files as input, performs read-level quality control, alignment, and sample-level QC, and produces small variant (SNV/indel) and structural variant (SV) calls with functional annotation.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+The pipeline is built using nf-core modules, follows nf-core best practices for reproducibility and portability, and optionally supports benchmarking against Genome in a Bottle (GIAB) truth sets to evaluate variant calling performance.
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/guidelines/graphic_design/workflow_diagrams#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+## Pipeline overview
+
+The default workflow includes the following steps:
+1. Read quality control (FastQC)
+2. Adapter trimming and read filtering (fastp)
+3. Alignment to the reference genome (BWA-MEM2)
+4. Duplicate marking and alignment metrics (Picard)
+5. Coverage and depth QC (mosdepth)
+6. Contamination estimation (VerifyBamID2)
+7. Sample identity, sex inference, and ancestry checks (Somalier)
+8. Small variant calling (SNVs and indels) (DeepVariant)
+9. Structural variant calling (Manta, TIDDIT)
+10. Variant annotation (Ensembl VEP)
+11. Aggregated reporting (MultiQC)
+
+Optional benchmarking against GIAB truth data can be enabled via a dedicated pipeline profile.
 
 ## Usage
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
-
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
 
 First, prepare a samplesheet with your input data that looks as follows:
 
@@ -43,18 +50,17 @@ sample,fastq_1,fastq_2
 CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+Each row represents a pair of fastq files (paired end).
 
 -->
 
 Now, you can run the pipeline using:
 
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
-
 ```bash
-nextflow run taylordgenes/variant_calling \
+nextflow run taylordgenes-variant-calling/main.nf \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
+   --genome GRCh38 \
    --outdir <OUTDIR>
 ```
 
@@ -63,22 +69,15 @@ nextflow run taylordgenes/variant_calling \
 
 ## Credits
 
-taylordgenes/variant_calling was originally written by Taylor Lynch.
+taylordgenes-variant-calling was originally written by Taylor Lynch.
 
-We thank the following people for their extensive assistance in the development of this pipeline:
-
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+This pipeline builds upon the work of the nf-core community and reuses a large number of nf-core modules and utilities.
 
 ## Contributions and Support
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
 ## Citations
-
-<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use taylordgenes/variant_calling for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
-
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 

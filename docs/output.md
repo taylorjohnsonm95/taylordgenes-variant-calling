@@ -1,4 +1,4 @@
-# taylordgenes/variant_calling: Output
+# taylordgenes-variant-calling: Output
 
 ## Introduction
 
