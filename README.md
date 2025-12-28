@@ -52,8 +52,6 @@ CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
 
 Each row represents a pair of fastq files (paired end).
 
--->
-
 Now, you can run the pipeline using:
 
 ```bash
