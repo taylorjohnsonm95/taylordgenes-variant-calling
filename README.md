@@ -65,6 +65,32 @@ nextflow run taylordgenes-variant-calling/main.nf \
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
+## Documentation
+
+This pipeline includes extended documentation describing the selected tools, benchmarking strategy, and pipeline construction.
+
+### Methods
+
+[Methods](docs/methods.md)
+
+Describes the end-to-end analytical methodology used by the pipeline, from raw Illumina sequencing reads through alignment, quality control, variant calling, and annotation.
+This document explains why specific tools and parameters were chosen (for example, DeepVariant without BQSR, paired-end WGS assumptions, and QC thresholds), and is intended for users who want a clear understanding of the biological and technical rationale behind each pipeline stage.
+
+### Benchmarking
+
+[Benchmarking](docs/benchmarking.md)
+
+Details the benchmarking framework used to evaluate small-variant calling performance using Genome in a Bottle (GIAB) truth sets.
+It documents the normalization and comparison steps (bcftools norm and hap.py), the reference datasets used (HG002, GRCh38), and the interpretation of precision, recall, and F1-score metrics.
+Benchmarking can be enabled via a dedicated pipeline profile and is designed to support validation and method comparison.
+
+### Pipeline Design and Implementation
+
+[Pipeline Design](docs/building_the_pipeline.md)
+
+Explains how the pipeline was built using the nf-core template and modules, including workflow structure, channel design, parameter handling, and reference management via iGenomes.
+This document is intended for developers and advanced users who want to understand how the workflow adheres to nf-core best practices for modularity, reproducibility, CI/CD testing, and scalability across cloud and HPC environments.
+
 ## Credits
 
 taylordgenes-variant-calling was originally written by Taylor Lynch.
