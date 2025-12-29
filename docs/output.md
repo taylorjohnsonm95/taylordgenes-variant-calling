@@ -27,26 +27,31 @@ The pipeline is built using Nextflow and processes whole-genome sequencing (WGS)
 - Pipeline information – Execution and provenance metadata
 
 ## FastQC
-*_fastqc.html: Interactive HTML report. 
+*_fastqc.html: Interactive HTML report.
+
 *_fastqc.zip: Archive containing raw FastQC metrics and plots.
 
 FastQC provides an initial quality assessment of raw sequencing reads, including base quality distributions, GC content, adapter contamination, and overrepresented sequences.
 
 ## fastp
-*.html: Interactive trimming and QC report. 
+*.html: Interactive trimming and QC report.
+
 *.json: Machine-readable QC metrics.
 
 fastp performs adapter trimming, low-quality base trimming, and read filtering. It also produces comprehensive QC summaries that are parsed by MultiQC.
 
 ## BWA-MEM2
-*.bam: Coordinate-sorted alignment file.  
+*.bam: Coordinate-sorted alignment file.
+
 *.bai: BAM index file.
 
 BWA-MEM2 aligns trimmed reads to the reference genome. Paired-end alignment information is retained for downstream variant calling and QC.
 
 ## Picard MarkDuplicates
-*.bam: Duplicate-marked BAM file. 
-*.bai: BAM index file.  
+*.bam: Duplicate-marked BAM file.
+
+*.bai: BAM index file.
+
 *.metrics.txt: Duplication metrics.
 
 Picard MarkDuplicates identifies PCR and optical duplicates to prevent inflation of coverage and variant evidence.
@@ -57,8 +62,10 @@ Picard MarkDuplicates identifies PCR and optical duplicates to prevent inflation
 CollectWgsMetrics reports mean coverage, coverage uniformity, and the fraction of the genome covered at different depth thresholds (e.g. ≥10×, ≥20×).
 
 ## mosdepth
-*.summary.txt: Coverage summary statistics. 
-*.regions.bed.gz: Per-region coverage.  
+*.summary.txt: Coverage summary statistics.
+
+*.regions.bed.gz: Per-region coverage.
+
 *.per-base.bed.gz: Per-base coverage (optional).
 
 mosdepth computes fast and memory-efficient coverage statistics, useful for identifying coverage dropouts and uneven depth.
@@ -91,27 +98,33 @@ Somalier verifies sample identity, infers ancestry, checks reported sex, and det
 samtools provides quick sanity checks for alignment quality, mapping rate, and pairing statistics.
 
 ## DeepVariant
-*.vcf.gz: Small variant calls (SNVs and indels).  
-*.vcf.gz.tbi: Tabix index.  
+*.vcf.gz: Small variant calls (SNVs and indels).
+
+*.vcf.gz.tbi: Tabix index.
+
 *.g.vcf.gz: gVCF output (optional).
 
 DeepVariant performs highly accurate germline SNV and indel calling using a deep learning model trained on sequencing data. Base Quality Score Recalibration (BQSR) is intentionally omitted.
 
 ## Manta
-*.vcf.gz: Structural variant calls. 
+*.vcf.gz: Structural variant calls.
+
 *.vcf.gz.tbi: Tabix index.
 
 Manta detects deletions, duplications, inversions, insertions, and translocations using paired-end and split-read evidence.
 
 ## TIDDIT
-*.vcf.gz: Structural variant calls. 
+*.vcf.gz: Structural variant calls.
+
 *.vcf.gz.tbi: Tabix index.
 
 TIDDIT provides complementary structural variant detection based on read depth and discordant read pairs.
 
 ## Ensembl VEP
-*.vcf.gz: Annotated VCF file. 
-*.vcf.gz.tbi: Tabix index.  
+*.vcf.gz: Annotated VCF file.
+
+*.vcf.gz.tbi: Tabix index.
+
 *.html: Summary annotation report (optional).
 
 Ensembl Variant Effect Predictor (VEP) annotates variants with transcript consequences, MANE selections, population frequencies, and clinical context.
