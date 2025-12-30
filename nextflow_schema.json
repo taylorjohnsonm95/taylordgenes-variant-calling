@@ -107,6 +107,49 @@
                     "type": "boolean",
                     "description": "BWAMEM2 sort bam option",
                     "fa_icon": "fas fa-question-circle"
+                },
+                "save_trimmed_fail": {
+                    "type": "boolean",
+                    "description": "fastp option",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "save_merged": {
+                    "type": "boolean",
+                    "description": "fastp option",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "benchmarking": {
+                    "type": "boolean",
+                    "description": "benchmarking subworkflow",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "mosdepth_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "fa_icon": "far fa-file-code"
+                },
+                "somalier_ped": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "fa_icon": "far fa-file-code"
+                },
+                "bench_truth_vcf": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "fa_icon": "far fa-file-code"
+                },
+                "bench_truth_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "fa_icon": "far fa-file-code"
                 }
             }
         },
