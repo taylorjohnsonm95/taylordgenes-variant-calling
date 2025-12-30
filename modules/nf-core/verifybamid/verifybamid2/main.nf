@@ -10,6 +10,7 @@ process VERIFYBAMID_VERIFYBAMID2 {
     input:
     tuple val(meta), path(bam), path(bai)
     tuple path(svd_ud), path(svd_mu), path(svd_bed)
+    path refvcf
     path references
 
     output:
@@ -33,6 +34,7 @@ process VERIFYBAMID_VERIFYBAMID2 {
 
     def svd_args = (svd_ud.baseName.equals(svd_mu.baseName) && svd_ud.baseName.equals(svd_bed.baseName)) ?
         "--SVDPrefix ${svd_ud.baseName}" : "--UDPath ${svd_ud} --MeanPath ${svd_mu} --BedPath ${svd_bed}"
+    def refvcf_args = "${refvcf}".endsWith(".vcf") ? "--RefVCF ${refvcf}" : ""
 
     def reference_args = ("$references".endsWith('.fasta')) ?
         "--Reference ${references}" : ''
@@ -42,6 +44,7 @@ process VERIFYBAMID_VERIFYBAMID2 {
         --NumThread $task.cpus \\
         ${svd_args} \\
         ${bam_file} \\
+        ${refvcf_args} \\
         ${reference_args}  \\
         ${args_list.join(' ')} \\
         > ${prefix}.log

@@ -11,6 +11,7 @@ process PICARD_COLLECTWGSMETRICS {
     tuple val(meta), path(bam), path(bai)
     tuple val(meta2), path(fasta)
     tuple val(meta3), path(fai)
+    path  intervallist
 
     output:
     tuple val(meta), path("*_metrics"), emit: metrics
@@ -23,6 +24,7 @@ process PICARD_COLLECTWGSMETRICS {
     def args      = task.ext.args ?: ''
     def prefix    = task.ext.prefix ?: "${meta.id}"
     def avail_mem = 3072
+    def interval  = intervallist ? "--INTERVALS ${intervallist}" : ''
     if (!task.memory) {
         log.info '[Picard CollectWgsMetrics] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
     } else {
@@ -35,7 +37,8 @@ process PICARD_COLLECTWGSMETRICS {
         $args \\
         --INPUT $bam \\
         --OUTPUT ${prefix}.CollectWgsMetrics.coverage_metrics \\
-        --REFERENCE_SEQUENCE ${fasta}
+        --REFERENCE_SEQUENCE ${fasta} \\
+        $interval
 
 
     cat <<-END_VERSIONS > versions.yml

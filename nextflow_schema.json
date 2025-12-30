@@ -113,6 +113,11 @@
                     "description": "fastp option",
                     "fa_icon": "fas fa-question-circle"
                 },
+                "discard_trimmed_pass": {
+                    "type": "boolean",
+                    "description": "fastp option",
+                    "fa_icon": "fas fa-question-circle"
+                },
                 "save_merged": {
                     "type": "boolean",
                     "description": "fastp option",

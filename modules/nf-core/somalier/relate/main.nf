@@ -10,6 +10,7 @@ process SOMALIER_RELATE {
 
     input:
     tuple val(meta), path(extract), path(ped)
+    path(sample_groups)
 
     output:
     tuple val(meta), path("*.html"),          emit: html
@@ -22,8 +23,9 @@ process SOMALIER_RELATE {
 
     script:
     def args = task.ext.args ?: ''
-    def input_list = extract.collect{"$it"}.join(' ')
+    def input_list = extract.join(' ')
     def prefix = task.ext.prefix ?: "$meta.id"
+    def sample_groups_command = sample_groups ? "-g $sample_groups" : ""
     def ped_command = ped ? "-p $ped" : ""
 
     """
@@ -31,6 +33,7 @@ process SOMALIER_RELATE {
         -o ${prefix} \\
         ${input_list} \\
         ${args} \\
+        ${sample_groups_command} \\
         ${ped_command}
 
     cat <<-END_VERSIONS > versions.yml

@@ -63,7 +63,7 @@ workflow VARIANT_CALLING {
     // MODULE: Run Fastp
     //
     FASTP (
-        ch_samplesheet,
+        ch_samplesheet.map { meta, reads -> [ meta, reads, [] ] },
         params.discard_trimmed_pass,
         params.save_trimmed_fail,
         params.save_merged
@@ -101,7 +101,8 @@ workflow VARIANT_CALLING {
     PICARD_COLLECTWGSMETRICS (
         ch_bam_bai,
         ch_fasta,
-        ch_fasta_fai
+        ch_fasta_fai,
+        []
     )
     ch_multiqc_files = ch_multiqc_files.mix(PICARD_COLLECTWGSMETRICS.out.metrics.collect{ it[1] })
     ch_versions = ch_versions.mix(PICARD_COLLECTWGSMETRICS.out.versions.first())
@@ -123,6 +124,7 @@ workflow VARIANT_CALLING {
     VERIFYBAMID_VERIFYBAMID2 (
         ch_bam_bai,
         ch_svd,
+        [],
         ch_fasta.map{ meta, fa -> fa }
     )
     ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID2.out.self_sm.collect{ it[1] })
@@ -152,7 +154,8 @@ workflow VARIANT_CALLING {
 
     ch_query_somalier_files_ped = ch_query_somalier_files.combine(ch_somalier_ped.map { meta, ped -> [ped ?: []] })
     SOMALIER_RELATE (
-        ch_query_somalier_files_ped
+        ch_query_somalier_files_ped,
+        []
     )
     ch_multiqc_files = ch_multiqc_files.mix(SOMALIER_RELATE.out.html.collect{ it[1] })
     ch_versions = ch_versions.mix(SOMALIER_RELATE.out.versions.first())
@@ -183,7 +186,7 @@ workflow VARIANT_CALLING {
         [ [ id:'null' ], [] ]
     )
     ch_versions = ch_versions.mix(DEEPVARIANT_RUNDEEPVARIANT.out.versions.first())
-    
+
     // //
     // // MODULE: Run manta
     // //

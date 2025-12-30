@@ -16,7 +16,6 @@ process BWAMEM2_MEM {
     output:
     tuple val(meta), path("*.sam")  , emit: sam , optional:true
     tuple val(meta), path("*.bam")  , emit: bam , optional:true
-    tuple val(meta), path("*.bai")  , emit: bai , optional:true
     tuple val(meta), path("*.cram") , emit: cram, optional:true
     tuple val(meta), path("*.crai") , emit: crai, optional:true
     tuple val(meta), path("*.csi")  , emit: csi , optional:true
@@ -37,25 +36,16 @@ process BWAMEM2_MEM {
     def reference = fasta && extension=="cram"  ? "--reference ${fasta}" : ""
     if (!fasta && extension=="cram") error "Fasta reference is required for CRAM output"
 
-    def rg = "@RG\\tID:${meta.id}\\tSM:${meta.id}\\tPL:ILLUMINA"
-
     """
     INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
 
     bwa-mem2 \\
         mem \\
-        -R "${rg}" \\
         $args \\
         -t $task.cpus \\
         \$INDEX \\
         $reads \\
         | samtools $samtools_command $args2 -@ $task.cpus ${reference} -o ${prefix}.${extension} -
-
-    if [ "$extension" = "bam" ]; then
-        samtools index -@ $task.cpus ${prefix}.bam
-    elif [ "$extension" = "cram" ]; then
-        samtools index -@ $task.cpus ${prefix}.cram
-    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
