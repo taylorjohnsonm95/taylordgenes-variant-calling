@@ -28,8 +28,8 @@ lint:
     - .github/workflows/awsfulltest.yml
 
 template:
-  org: taylordgenes
-  name: variant_calling
+  org: taylorjohnsonm95
+  name: taylordgenes-variant-calling
   description: A germline variant calling pipeline
   author: Taylor Lynch
   version: 1.0.0
