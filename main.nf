@@ -72,7 +72,7 @@ workflow TAYLORDGENES_VARIANT_CALLING {
     ch_somalier_ped = params.somalier_ped ? Channel.fromPath(params.somalier_ped, checkIfExists: true)
         .map { ped -> [[id: ped.baseName], ped] }
         : Channel.value([[id:'null'], []])
-    
+
     // VEP
     ch_cache  = Channel.value( file(params.vep_cache, checkIfExists: true) )
 

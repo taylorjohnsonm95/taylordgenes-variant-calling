@@ -12,19 +12,22 @@ Benchmarking is disabled by default and must be explicitly enabled via a dedicat
 
 Benchmarking is performed using HG002 (NA24385) from the Genome in a Bottle (GIAB) Ashkenazim Trio.
 HG002 is used because it is the current community standard for germline variant benchmarking and is supported by:
-* High-confidence truth variant sets curated by NIST
-* Well-defined benchmark regions
-* Extensive use in published benchmarking studies and challenges
+
+- High-confidence truth variant sets curated by NIST
+- Well-defined benchmark regions
+- Extensive use in published benchmarking studies and challenges
 
 This ensures results are comparable to published benchmarks and other pipelines.
 
 ### Reference genome
-* Genome build: GRCh38
-* GIAB truth set version: v4.2.1
+
+- Genome build: GRCh38
+- GIAB truth set version: v4.2.1
 
 The following truth files are used:
-* High-confidence truth VCF (SNVs and indels)
-* High-confidence benchmark BED regions
+
+- High-confidence truth VCF (SNVs and indels)
+- High-confidence benchmark BED regions
 
 Only variants falling within the benchmark regions are evaluated.
 
@@ -39,9 +42,10 @@ Running all available reads is computationally expensive and was unnecessary for
 ### Resource-aware execution
 
 For this pipeline:
-* A single FASTQ pair (one sequencing lane) is used
-* All reads within that FASTQ pair are processed
-* No read downsampling is performed within the file
+
+- A single FASTQ pair (one sequencing lane) is used
+- All reads within that FASTQ pair are processed
+- No read downsampling is performed within the file
 
 This approach was chosen to reduce runtime and storage requirements, enable rapid development and testing while still allow meaningful comparison against the truth set.
 
@@ -61,23 +65,28 @@ Normalization includes, left-alignment of indels splitting multiallelic records 
 This step is required because benchmarking tools expect canonical variant representations. The tool used is bcftools norm.
 
 ## Comparison to truth set
+
 Normalized query variants are compared to the GIAB truth set using hap.py, a widely adopted benchmarking tool for germline small variants.
 hap.py:
-* Restricts evaluation to high-confidence regions
-* Handles complex variant representations
-* Reports precision, recall, and F1-score metrics
-* Produces stratified and per-variant comparison outputs
+
+- Restricts evaluation to high-confidence regions
+- Handles complex variant representations
+- Reports precision, recall, and F1-score metrics
+- Produces stratified and per-variant comparison outputs
 
 ## Outputs
+
 The benchmarking subworkflow produces the following outputs:
-* Summary CSV files with precision, recall, and F1 scores
-* Extended comparison tables
-* Annotated VCFs labeling true positives, false positives, and false negatives
-* Log files for traceability
+
+- Summary CSV files with precision, recall, and F1 scores
+- Extended comparison tables
+- Annotated VCFs labeling true positives, false positives, and false negatives
+- Log files for traceability
 
 ## Enabling benchmarking
 
 Use the benchmarking profile:
+
 ```{bash}
 nextflow run main.nf \
   -profile benchmarking,docker \

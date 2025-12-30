@@ -22,6 +22,7 @@ The pipeline is built using nf-core modules, follows nf-core best practices for 
 ## Pipeline overview
 
 The default workflow includes the following steps:
+
 1. Read quality control (FastQC)
 2. Adapter trimming and read filtering (fastp)
 3. Alignment to the reference genome (BWA-MEM2)
