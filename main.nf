@@ -51,6 +51,32 @@ workflow TAYLORDGENES_VARIANT_CALLING {
     ch_fasta_fai   = Channel.value([ [id: params.genome], file(params.fasta_fai) ])
     ch_bwamem2     = Channel.value([ [id: params.genome], file(params.bwamem2) ])
 
+    // mosdepth
+    ch_mosdepth_bed = params.mosdepth_bed ? Channel.fromPath(params.mosdepth_bed, checkIfExists: true)
+        .map { bed -> [[id: bed.baseName], bed] }
+        : Channel.value([[id:'null'], []])
+
+    // verifybamid2 files
+    ch_svd = Channel.value([
+        file(params.verifybamid_ud,  checkIfExists: true),
+        file(params.verifybamid_mu,  checkIfExists: true),
+        file(params.verifybamid_bed, checkIfExists: true)
+    ])
+
+    // somalier files
+    ch_somalier_sites     = Channel.value([ [id: 'sites'], file(params.somalier_sites, checkIfExists: true) ])
+    ch_somalier_ref_files = Channel.fromPath("${params.somalier_ref_dir}/*.somalier", checkIfExists: true).collect()
+    ch_labelled_somalier_files = ch_somalier_ref_files
+        .map { ref_files -> [ [id:'somalier_ref'], file(params.somalier_labels, checkIfExists: true), ref_files ] }
+
+    ch_somalier_ped = params.somalier_ped ? Channel.fromPath(params.somalier_ped, checkIfExists: true)
+        .map { ped -> [[id: ped.baseName], ped] }
+        : Channel.value([[id:'null'], []])
+
+    // VEP
+    ch_cache  = params.vep_cache ? Channel.fromPath(params.vep_cache, checkIfExists: true)
+        : Channel.value([])
+
     //
     // WORKFLOW: Run pipeline
     //
@@ -58,7 +84,13 @@ workflow TAYLORDGENES_VARIANT_CALLING {
         samplesheet,
         ch_fasta,
         ch_fasta_fai,
-        ch_bwamem2
+        ch_bwamem2,
+        ch_mosdepth_bed,
+        ch_svd,
+        ch_somalier_sites,
+        ch_labelled_somalier_files,
+        ch_somalier_ped,
+        ch_cache
     )
     emit:
     multiqc_report = VARIANT_CALLING.out.multiqc_report // channel: /path/to/multiqc_report.html

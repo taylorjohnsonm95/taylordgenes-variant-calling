@@ -40,6 +40,121 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
+                },
+                "verifybamid_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "description": "Path to verifybamid bed file.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "verifybamid_ud": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "description": "Path to verifybamid ud file.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "verifybamid_mu": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "description": "Path to verifybamid mu file.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "somalier_sites": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "description": "Path to somalier sites file.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "somalier_labels": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "description": "Path to somalier labels file.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "somalier_ref_dir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Somalier ref directory",
+                    "fa_icon": "fas fa-ban"
+                },
+                "vep_cache": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Path to VEP cache directory",
+                    "fa_icon": "fas fa-ban"
+                },
+                "cache_version": {
+                    "type": "integer",
+                    "description": "VEP cache version. Ex 115",
+                    "fa_icon": "fas fa-book"
+                },
+                "species": {
+                    "type": "string",
+                    "description": "homo_sapiens",
+                    "fa_icon": "fas fa-book"
+                },
+                "sort_bam": {
+                    "type": "boolean",
+                    "description": "BWAMEM2 sort bam option",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "save_trimmed_fail": {
+                    "type": "boolean",
+                    "description": "fastp option",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "discard_trimmed_pass": {
+                    "type": "boolean",
+                    "description": "fastp option",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "save_merged": {
+                    "type": "boolean",
+                    "description": "fastp option",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "benchmarking": {
+                    "type": "boolean",
+                    "description": "benchmarking subworkflow",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "mosdepth_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "fa_icon": "far fa-file-code"
+                },
+                "somalier_ped": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "fa_icon": "far fa-file-code"
+                },
+                "bench_truth_vcf": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "fa_icon": "far fa-file-code"
+                },
+                "bench_truth_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "fa_icon": "far fa-file-code"
                 }
             }
         },
