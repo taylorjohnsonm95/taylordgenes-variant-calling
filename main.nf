@@ -74,7 +74,8 @@ workflow TAYLORDGENES_VARIANT_CALLING {
         : Channel.value([[id:'null'], []])
 
     // VEP
-    ch_cache  = Channel.value( file(params.vep_cache, checkIfExists: true) )
+    ch_cache  = params.vep_cache ? Channel.fromPath(params.vep_cache, checkIfExists: true)
+        : Channel.value([])
 
     //
     // WORKFLOW: Run pipeline
